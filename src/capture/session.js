@@ -33,6 +33,8 @@ export class Session {
 	/** Start over from an empty log (a fresh `|init|` dump on rejoin replaces everything already seen). */
 	reset() {
 		this.lines = [];
+		this.closed = false;
+		this.snapshot = null;
 		this.parser = new LogParser({ dex: this.ctx.dex });
 		this.sawStart = false;
 		this.req = { side: null, preview: null, maxChosen: 0, chosen: null };
@@ -88,9 +90,23 @@ export class Session {
 
 	onEnded() {
 		this.state = this.saved ? 'saved' : 'settling';
+		// read the client's own log right after this message is processed, while the room still exists
+		if (this.partial && !this.snapshot) {
+			const t = setTimeout(() => this.snap(), 0);
+			if (typeof t.unref === 'function') t.unref();
+		}
 		const g = this.parser.g;
 		const rated = g.ratings.p1 && g.ratings.p2;
 		this.schedule(rated ? 0 : this.ctx.settleMs);
+	}
+
+	snap() {
+		try {
+			const q = this.ctx.getBattleLog(this.roomid);
+			if (Array.isArray(q) && q.length) this.snapshot = q;
+		} catch (err) {
+			this.ctx.log(`could not read the client log of ${this.roomid}: ${err && err.message}`);
+		}
 	}
 
 	schedule(ms) {
@@ -106,7 +122,8 @@ export class Session {
 	close() {
 		if (this.closed) return this.chain;
 		this.closed = true;
-		return this.flush();
+		if (this.partial && !this.snapshot) this.snap();
+		return this.flush().then(() => this.ctx.closed(this));
 	}
 
 	dispose() {
@@ -157,7 +174,7 @@ export class Session {
 	startBackfill() {
 		if (this.backfillTried) return;
 		this.backfillTried = true;
-		this.backfillP = backfillLog({ roomid: this.roomid, getBattleLog: this.ctx.getBattleLog, fetchFn: this.ctx.fetchFn, log: this.ctx.log })
+		this.backfillP = backfillLog({ roomid: this.roomid, snapshot: this.snapshot, getBattleLog: this.ctx.getBattleLog, fetchFn: this.ctx.fetchFn, log: this.ctx.log })
 			.then(res => {
 				if (!res) return;
 				this.applyBackfill(res);

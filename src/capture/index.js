@@ -5,10 +5,10 @@ import { assembleSet } from './record.js';
 
 export const DEFAULT_TRACKED_FORMATS = ['^gen9(champions)?vgc\\d{4}'];
 export const DEFAULT_SETTLE_MS = 1500;
+export const DEFAULT_LINGER_MS = 10 * 60 * 1000;
 const MAX_ERRORS = 20;
-const LINGER_MS = 10 * 60 * 1000;
 const BATTLE_ROOM = /^battle-([a-z0-9]+)-\d+/;
-const LEAVE_CMD = /^\/(noreply )?(leave|part)\b/;
+const LEAVE_CMD = /^(\/noreply )?\/(leave|part)\b *(.*)$/;
 const NO_USER_HINT = 'Not logged in: games are not saved. Log in to a Showdown account to record games.';
 
 function compilePatterns(list) {
@@ -41,6 +41,7 @@ function userFromLine(line) {
  * @param {Function} [o.getDex] lazy alternative to `dex`
  * @param {Function} [o.fetchFn] fetch implementation for replay backfill
  * @param {number} [o.settleMs] wait after |win| for rating lines
+ * @param {number} [o.lingerMs] a session with no messages for this long is dropped
  * @param {Function} [o.now]
  */
 export function startCapture(o) {
@@ -48,6 +49,8 @@ export function startCapture(o) {
 	const now = o.now || Date.now;
 	const repoP = Promise.resolve(o.repo);
 	const sessions = new Map();
+	const idleTimers = new Map();
+	const lingerMs = o.lingerMs === undefined ? DEFAULT_LINGER_MS : o.lingerMs;
 	const listeners = new Set();
 	const errors = [];
 	let lastSaved = null;
@@ -128,6 +131,10 @@ export function startCapture(o) {
 		getBattleLog: id => (host.getBattleLog ? host.getBattleLog(id) : null),
 		fetchFn: o.fetchFn || (typeof fetch === 'function' ? (...a) => fetch(...a) : null),
 		commit,
+		closed: session => {
+			// a closed room is done unless a finished game still waits for a user name
+			if (!session.complete || session.state === 'saved' || session.state === 'skipped') session.idle().then(() => dropSession(session.roomid));
+		},
 		changed,
 		log,
 	};
@@ -139,12 +146,19 @@ export function startCapture(o) {
 		if (!m || !patterns.some(re => re.test(m[1]))) return null;
 		s = new Session(roomid, ctx);
 		sessions.set(roomid, s);
-		const t = setTimeout(() => dropSession(roomid), LINGER_MS);
-		if (typeof t.unref === 'function') t.unref();
 		return s;
 	}
 
+	function touch(roomid) {
+		clearTimeout(idleTimers.get(roomid));
+		const t = setTimeout(() => dropSession(roomid), lingerMs);
+		if (typeof t.unref === 'function') t.unref();
+		idleTimers.set(roomid, t);
+	}
+
 	function dropSession(roomid) {
+		clearTimeout(idleTimers.get(roomid));
+		idleTimers.delete(roomid);
 		const s = sessions.get(roomid);
 		if (!s) return;
 		if (s.complete && s.state !== 'saved' && s.state !== 'skipped') s.flush();
@@ -157,8 +171,11 @@ export function startCapture(o) {
 		if (stopped || !ev || !Array.isArray(ev.lines)) return;
 		try {
 			if (ev.type === 'out') {
-				const s = sessions.get(ev.roomid);
-				if (s && ev.lines.some(l => LEAVE_CMD.test(l))) s.close();
+				for (const line of ev.lines) {
+					const m = LEAVE_CMD.exec(line);
+					const s = m && sessions.get(ev.roomid || m[3].trim());
+					if (s) s.close();
+				}
 				return;
 			}
 			if (!ev.roomid) {
@@ -175,7 +192,10 @@ export function startCapture(o) {
 			const isNew = !sessions.has(ev.roomid);
 			const s = sessionFor(ev.roomid);
 			if (isNew) refreshSettings();
-			if (s) s.feed(ev.lines);
+			if (s) {
+				touch(ev.roomid);
+				s.feed(ev.lines);
+			}
 		} catch (err) {
 			log('capture handler failed: ' + (err && err.message), err);
 		}
@@ -224,6 +244,8 @@ export function startCapture(o) {
 			unsubscribe();
 			unsubscribeRepo();
 			for (const s of sessions.values()) s.dispose();
+			for (const t of idleTimers.values()) clearTimeout(t);
+			idleTimers.clear();
 			sessions.clear();
 			listeners.clear();
 		},

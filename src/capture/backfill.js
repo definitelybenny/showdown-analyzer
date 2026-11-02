@@ -24,14 +24,15 @@ function toLines(text) {
 
 /**
  * Try to obtain the full protocol log of `roomid`.
- * @param {{roomid: string, getBattleLog?: Function, fetchFn?: Function, log?: Function}} opts
+ * @param {{roomid: string, snapshot?: string[], getBattleLog?: Function, fetchFn?: Function, log?: Function}} opts
  * @returns {Promise<null | {lines: string[], source: 'stepQueue' | 'replay'}>} never rejects
  */
 export async function backfillLog(opts) {
-	const { roomid, getBattleLog, fetchFn, log } = opts;
+	const { roomid, snapshot, getBattleLog, fetchFn, log } = opts;
 	const warn = typeof log === 'function' ? log : () => {};
 	try {
-		const queue = typeof getBattleLog === 'function' ? getBattleLog(roomid) : null;
+		let queue = snapshot;
+		if (!Array.isArray(queue) || !looksComplete(toLines(queue.join('\n')))) queue = typeof getBattleLog === 'function' ? getBattleLog(roomid) : null;
 		if (Array.isArray(queue)) {
 			const lines = toLines(queue.join('\n'));
 			if (looksComplete(lines)) return { lines, source: 'stepQueue' };

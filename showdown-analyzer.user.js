@@ -522,7 +522,7 @@
   var HYPHEN_BASE_IDS = new Map(HYPHEN_BASES.map((n) => [toID(n), n]));
 
   // src/capture/index.js
-  var LINGER_MS = 10 * 60 * 1e3;
+  var DEFAULT_LINGER_MS = 10 * 60 * 1e3;
 
   // src/main.js
   var STYLE_ID = "sa-style";

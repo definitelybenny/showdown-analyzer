@@ -29,12 +29,14 @@ function makeHost(user) {
 		getUserName: () => host.user,
 		getMyTeams: () => host.teams,
 		getBattleLog: id => host.queues[id] || null,
+		dropQueueOnLeave: false,
 		/** Deliver a raw server message (">room\n|line...") the way the hook normalizes it. */
 		receive(msg) {
 			for (const b of splitMessage(msg)) for (const fn of listeners) fn({ type: 'in', roomid: b.roomid, lines: b.lines });
 		},
 		send(roomid, text) {
 			for (const fn of listeners) fn({ type: 'out', roomid, lines: [text] });
+			if (host.dropQueueOnLeave && /leave/.test(text)) delete host.queues[roomid]; // the client destroys the battle after the hook ran
 		},
 	};
 	return host;
@@ -99,7 +101,7 @@ async function setup(user, extra = {}) {
 	repo = await openRepo({ indexedDB: new IDBFactory(), broadcast: false });
 	host = makeHost(user);
 	fetchLog = [];
-	capture = startCapture({ repo, host, dex: Dex, settleMs: extra.settleMs ?? 10, fetchFn: extra.fetchFn || (async url => { fetchLog.push(url); return { ok: false, status: 404 }; }) });
+	capture = startCapture({ repo, host, dex: Dex, settleMs: extra.settleMs ?? 10, lingerMs: extra.lingerMs, fetchFn: extra.fetchFn || (async url => { fetchLog.push(url); return { ok: false, status: 404 }; }) });
 	await capture.refreshSettings();
 }
 
@@ -228,7 +230,7 @@ test('a game left before it ended is not saved', async () => {
 	host.send(roomid, '/leave');
 	await capture.flush();
 	assert.equal((await repo.listGames()).length, 0);
-	assert.equal(capture.captureStatus().live.length, 1);
+	assert.equal(capture.captureStatus().live.length, 0, 'a closed room is no longer listed as recording');
 });
 
 test('late user name: nothing saved as a guest, saved once |updateuser| names the user', async () => {
@@ -409,4 +411,51 @@ test('request helpers and replay ids', () => {
 	assert.equal(replayIdFor('battle-gen9vgc2025regg-123'), 'gen9vgc2025regg-123');
 	assert.equal(replayIdFor('battle-gen9vgc2025regg-123-abcdef'), null);
 	assert.equal(isPrivateRoom('battle-gen9vgc2025regg-123-abcdef'), true);
+});
+
+test('a long game is not dropped by the idle timer while messages keep arriving', async () => {
+	await setup(SET_A.me, { lingerMs: 40 });
+	const id = P + SET_A.games[0];
+	const roomid = 'battle-' + id;
+	const lines = loadFixture(id).log.split('\n');
+	const req = requestsFor(lines, parseLog(lines).players.p1.name === SET_A.me ? 'p1' : 'p2');
+	const startAt = lines.findIndex(l => l === '|start');
+	const half = lines.findIndex(l => l.indexOf('|turn|2') === 0);
+	host.receive(msg(roomid, ['|init|battle']));
+	host.receive(msg(roomid, [req.preview]));
+	host.receive(msg(roomid, lines.slice(0, startAt + 1)));
+	host.receive(msg(roomid, [req.chosen]));
+	for (let i = startAt + 1; i < lines.length; i += 5) {
+		host.receive(msg(roomid, lines.slice(i, Math.min(lines.length, i + 5))));
+		if (i < half + 5) await sleep(15);
+	}
+	assert.ok(half > startAt);
+	await capture.flush();
+	const g = await repo.getGame(roomid);
+	assert.equal(g.partial, false);
+	assert.equal(g.picksSource, 'request');
+	assert.equal(await repo.countGames(), 1);
+});
+
+test('an idle session with no messages is dropped after the linger time', async () => {
+	await setup(SET_A.me, { lingerMs: 20 });
+	host.receive(msg('battle-' + P + SET_A.games[0], ['|init|battle', '|player|p1|a|1|']));
+	assert.equal(capture.captureStatus().live.length, 1);
+	await sleep(60);
+	assert.equal(capture.captureStatus().live.length, 0);
+});
+
+test('stepQueue is read before the room is destroyed on leave', async () => {
+	await setup(SET_A.me, { settleMs: 60000 });
+	const id = P + SET_A.games[0];
+	const lines = loadFixture(id).log.split('\n');
+	host.queues['battle-' + id] = lines;
+	host.dropQueueOnLeave = true;
+	const { roomid } = feedGame(host, id, { me: SET_A.me, from: lines.findIndex(l => l === '|start') + 1, sendChosen: true });
+	host.send(roomid, '/noreply /leave');
+	await capture.flush();
+	const g = await repo.getGame(roomid);
+	assert.equal(g.backfill, 'stepQueue');
+	assert.equal(g.partial, false);
+	assert.equal(fetchLog.length, 0);
 });
