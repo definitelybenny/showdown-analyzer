@@ -1,3 +1,5 @@
 node_modules/
 .claude/
 *.local.md
+.replay-cache/
+.scratch/

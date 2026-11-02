@@ -1,0 +1,108 @@
+{
+	"id": "gen9championsvgc2026regmcbo3-2708112191",
+	"format": "[Gen 9 Champions] VGC 2026 Reg M-C (Bo3)",
+	"players": [
+		"Naiohernandez",
+		"PaiBrazVGC_Oficial"
+	],
+	"ratingAtStart": [
+		1274,
+		1294
+	],
+	"winner": "PaiBrazVGC_Oficial",
+	"end": "forfeit",
+	"forfeiter": "p1",
+	"turns": 6,
+	"bo3": {
+		"wrapperId": "game-bestof3-gen9championsvgc2026regmcbo3-2708109113",
+		"gameNumber": 3,
+		"score": {
+			"p1": 1,
+			"p2": 1
+		}
+	},
+	"roster": {
+		"p1": [
+			"Salamence",
+			"Whimsicott",
+			"Gholdengo",
+			"Rillaboom",
+			"Sneasler",
+			"Raichu"
+		],
+		"p2": [
+			"Pelipper",
+			"Incineroar",
+			"Rillaboom",
+			"Archaludon",
+			"Annihilape",
+			"Golisopod"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [
+			"Salamence",
+			"Whimsicott",
+			"Gholdengo",
+			"Rillaboom",
+			"Sneasler",
+			"Raichu"
+		],
+		"p2": [
+			"Pelipper",
+			"Incineroar",
+			"Rillaboom",
+			"Archaludon",
+			"Annihilape",
+			"Golisopod"
+		]
+	},
+	"picks": {
+		"p1": [
+			"Salamence",
+			"Gholdengo",
+			"Sneasler",
+			"Rillaboom"
+		],
+		"p2": [
+			"Annihilape",
+			"Golisopod",
+			"Incineroar",
+			"Archaludon"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Salamence",
+			"Gholdengo"
+		],
+		"p2": [
+			"Annihilape",
+			"Golisopod"
+		]
+	},
+	"mega": {
+		"p1": [
+			"Salamence-Mega"
+		],
+		"p2": [
+			"Golisopod-Mega"
+		]
+	},
+	"tera": {
+		"p1": [],
+		"p2": []
+	},
+	"ratings": {
+		"p1": {
+			"name": "Naiohernandez",
+			"before": 1274,
+			"after": 1250
+		},
+		"p2": {
+			"name": "PaiBrazVGC_Oficial",
+			"before": 1294,
+			"after": 1318
+		}
+	}
+}

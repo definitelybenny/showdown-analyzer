@@ -1,0 +1,85 @@
+{
+	"id": "gen9vgc2025regi-2707575566",
+	"format": "[Gen 9] VGC 2025 Reg I",
+	"players": [
+		"sukyandaru",
+		"gravi2y"
+	],
+	"ratingAtStart": [
+		null,
+		null
+	],
+	"winner": "gravi2y",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 8,
+	"bo3": null,
+	"roster": {
+		"p1": [
+			"Grimmsnarl",
+			"Annihilape",
+			"Sinistcha-Masterpiece",
+			"Zoroark-Hisui",
+			"Arcanine-Hisui",
+			"Toucannon"
+		],
+		"p2": [
+			"Inteleon",
+			"Klefki",
+			"Talonflame",
+			"Porygon-Z",
+			"Venomoth",
+			"Rhydon"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [],
+		"p2": []
+	},
+	"picks": {
+		"p1": [
+			"Sinistcha-Masterpiece",
+			"Arcanine-Hisui",
+			"Zoroark-Hisui",
+			"Toucannon"
+		],
+		"p2": [
+			"Klefki",
+			"Talonflame",
+			"Rhydon",
+			"Venomoth"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Sinistcha-Masterpiece",
+			"Arcanine-Hisui"
+		],
+		"p2": [
+			"Klefki",
+			"Talonflame"
+		]
+	},
+	"mega": {
+		"p1": [],
+		"p2": []
+	},
+	"tera": {
+		"p1": [
+			{
+				"species": "Sinistcha-Masterpiece",
+				"type": "Water"
+			}
+		],
+		"p2": [
+			{
+				"species": "Rhydon",
+				"type": "Dragon"
+			}
+		]
+	},
+	"ratings": {
+		"p1": null,
+		"p2": null
+	}
+}

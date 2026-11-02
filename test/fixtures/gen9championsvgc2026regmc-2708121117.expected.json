@@ -1,0 +1,87 @@
+{
+	"id": "gen9championsvgc2026regmc-2708121117",
+	"format": "[Gen 9 Champions] VGC 2026 Reg M-C",
+	"players": [
+		"Bladesy",
+		"DaCulGy"
+	],
+	"ratingAtStart": [
+		1264,
+		1214
+	],
+	"winner": "Bladesy",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 6,
+	"bo3": null,
+	"roster": {
+		"p1": [
+			"Rillaboom",
+			"Archaludon",
+			"Pelipper",
+			"Dragonite",
+			"Sneasler",
+			"Basculegion"
+		],
+		"p2": [
+			"Zoroark-Hisui",
+			"Sneasler",
+			"Absol",
+			"Glimmora",
+			"Torkoal",
+			"Arboliva"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [],
+		"p2": []
+	},
+	"picks": {
+		"p1": [
+			"Archaludon",
+			"Dragonite",
+			"Pelipper",
+			"Rillaboom"
+		],
+		"p2": [
+			"Zoroark-Hisui",
+			"Absol",
+			"Torkoal",
+			"Sneasler"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Archaludon",
+			"Dragonite"
+		],
+		"p2": [
+			"Zoroark-Hisui",
+			"Absol"
+		]
+	},
+	"mega": {
+		"p1": [
+			"Dragonite-Mega"
+		],
+		"p2": [
+			"Absol-Mega-Z"
+		]
+	},
+	"tera": {
+		"p1": [],
+		"p2": []
+	},
+	"ratings": {
+		"p1": {
+			"name": "Bladesy",
+			"before": 1264,
+			"after": 1285
+		},
+		"p2": {
+			"name": "DaCulGy",
+			"before": 1214,
+			"after": 1193
+		}
+	}
+}

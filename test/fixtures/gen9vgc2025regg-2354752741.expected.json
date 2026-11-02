@@ -1,0 +1,93 @@
+{
+	"id": "gen9vgc2025regg-2354752741",
+	"format": "[Gen 9] VGC 2025 Reg G",
+	"players": [
+		"Khuc Dang Duy Anh",
+		"RamivanGG"
+	],
+	"ratingAtStart": [
+		1251,
+		1283
+	],
+	"winner": "RamivanGG",
+	"end": "inactivity",
+	"forfeiter": "p1",
+	"turns": 5,
+	"bo3": null,
+	"roster": {
+		"p1": [
+			"Incineroar",
+			"Koraidon",
+			"Walking Wake",
+			"Ogerpon-Hearthflame",
+			"Flutter Mane",
+			"Rillaboom"
+		],
+		"p2": [
+			"Urshifu-*",
+			"Incineroar",
+			"Calyrex-Shadow",
+			"Landorus",
+			"Raging Bolt",
+			"Tornadus"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [],
+		"p2": []
+	},
+	"picks": {
+		"p1": [
+			"Incineroar",
+			"Koraidon",
+			"Flutter Mane",
+			"Walking Wake"
+		],
+		"p2": [
+			"Incineroar",
+			"Calyrex-Shadow",
+			"Raging Bolt",
+			"Tornadus"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Incineroar",
+			"Koraidon"
+		],
+		"p2": [
+			"Incineroar",
+			"Calyrex-Shadow"
+		]
+	},
+	"mega": {
+		"p1": [],
+		"p2": []
+	},
+	"tera": {
+		"p1": [
+			{
+				"species": "Flutter Mane",
+				"type": "Fairy"
+			}
+		],
+		"p2": [
+			{
+				"species": "Raging Bolt",
+				"type": "Fairy"
+			}
+		]
+	},
+	"ratings": {
+		"p1": {
+			"name": "Khuc Dang Duy Anh",
+			"before": 1251,
+			"after": 1228
+		},
+		"p2": {
+			"name": "RamivanGG",
+			"before": 1283,
+			"after": 1306
+		}
+	}
+}

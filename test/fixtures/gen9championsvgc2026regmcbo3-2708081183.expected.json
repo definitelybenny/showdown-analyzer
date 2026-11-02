@@ -1,0 +1,97 @@
+{
+	"id": "gen9championsvgc2026regmcbo3-2708081183",
+	"format": "[Gen 9 Champions] VGC 2026 Reg M-C (Bo3)",
+	"players": [
+		"Unskilled99",
+		"MeerMika"
+	],
+	"ratingAtStart": [
+		1318,
+		1156
+	],
+	"winner": "Unskilled99",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 5,
+	"bo3": {
+		"wrapperId": "game-bestof3-gen9championsvgc2026regmcbo3-2708081182",
+		"gameNumber": 1,
+		"score": {
+			"p1": 0,
+			"p2": 0
+		}
+	},
+	"roster": {
+		"p1": [
+			"Kingambit",
+			"Gengar",
+			"Incineroar",
+			"Sneasler",
+			"Rillaboom",
+			"Garchomp"
+		],
+		"p2": [
+			"Ninetales-Alola",
+			"Charizard",
+			"Rillaboom",
+			"Garchomp",
+			"Samurott-Hisui",
+			"Gengar"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [
+			"Kingambit",
+			"Gengar",
+			"Incineroar",
+			"Sneasler",
+			"Rillaboom",
+			"Garchomp"
+		],
+		"p2": [
+			"Ninetales-Alola",
+			"Charizard",
+			"Rillaboom",
+			"Garchomp",
+			"Samurott-Hisui",
+			"Gengar"
+		]
+	},
+	"picks": {
+		"p1": [
+			"Sneasler",
+			"Rillaboom",
+			"Kingambit"
+		],
+		"p2": [
+			"Gengar",
+			"Rillaboom",
+			"Garchomp",
+			"Ninetales-Alola"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Sneasler",
+			"Rillaboom"
+		],
+		"p2": [
+			"Gengar",
+			"Rillaboom"
+		]
+	},
+	"mega": {
+		"p1": [],
+		"p2": [
+			"Gengar-Mega"
+		]
+	},
+	"tera": {
+		"p1": [],
+		"p2": []
+	},
+	"ratings": {
+		"p1": null,
+		"p2": null
+	}
+}

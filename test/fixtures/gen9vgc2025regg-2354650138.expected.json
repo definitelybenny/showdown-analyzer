@@ -1,0 +1,92 @@
+{
+	"id": "gen9vgc2025regg-2354650138",
+	"format": "[Gen 9] VGC 2025 Reg G",
+	"players": [
+		"svush",
+		"trexxis"
+	],
+	"ratingAtStart": [
+		1171,
+		1282
+	],
+	"winner": "trexxis",
+	"end": "inactivity",
+	"forfeiter": "p1",
+	"turns": 5,
+	"bo3": null,
+	"roster": {
+		"p1": [
+			"Sylveon",
+			"Dragapult",
+			"Ogerpon-Hearthflame",
+			"Sneasler",
+			"Chien-Pao",
+			"Ditto"
+		],
+		"p2": [
+			"Palkia-Origin",
+			"Chi-Yu",
+			"Dachsbun",
+			"Metagross",
+			"Rillaboom",
+			"Tornadus"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [],
+		"p2": []
+	},
+	"picks": {
+		"p1": [
+			"Sylveon",
+			"Sneasler",
+			"Ditto",
+			"Dragapult"
+		],
+		"p2": [
+			"Chi-Yu",
+			"Dachsbun",
+			"Palkia-Origin"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Sylveon",
+			"Sneasler"
+		],
+		"p2": [
+			"Chi-Yu",
+			"Dachsbun"
+		]
+	},
+	"mega": {
+		"p1": [],
+		"p2": []
+	},
+	"tera": {
+		"p1": [
+			{
+				"species": "Dragapult",
+				"type": "Ghost"
+			}
+		],
+		"p2": [
+			{
+				"species": "Chi-Yu",
+				"type": "Ghost"
+			}
+		]
+	},
+	"ratings": {
+		"p1": {
+			"name": "svush",
+			"before": 1171,
+			"after": 1154
+		},
+		"p2": {
+			"name": "trexxis",
+			"before": 1282,
+			"after": 1299
+		}
+	}
+}

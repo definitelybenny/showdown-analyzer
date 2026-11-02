@@ -1,0 +1,86 @@
+{
+	"id": "gen9championsvgc2026regma-2674137619",
+	"format": "[Gen 9 Champions] VGC 2026 Reg M-A",
+	"players": [
+		"justinblu3berry",
+		"kuafufromninesols"
+	],
+	"ratingAtStart": [
+		null,
+		null
+	],
+	"winner": "kuafufromninesols",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 10,
+	"bo3": {
+		"wrapperId": "game-bestof3-gen9championsvgc2026regma-2674137618",
+		"gameNumber": 1,
+		"score": {
+			"p1": 0,
+			"p2": 0
+		}
+	},
+	"roster": {
+		"p1": [
+			"Sinistcha",
+			"Torkoal",
+			"Greninja",
+			"Venusaur",
+			"Hatterene",
+			"Tinkaton"
+		],
+		"p2": [
+			"Delphox",
+			"Krookodile",
+			"Serperior",
+			"Gyarados",
+			"Aromatisse",
+			"Kingambit"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [],
+		"p2": []
+	},
+	"picks": {
+		"p1": [
+			"Tinkaton",
+			"Hatterene",
+			"Sinistcha",
+			"Greninja"
+		],
+		"p2": [
+			"Krookodile",
+			"Delphox",
+			"Kingambit",
+			"Aromatisse"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Tinkaton",
+			"Hatterene"
+		],
+		"p2": [
+			"Krookodile",
+			"Delphox"
+		]
+	},
+	"mega": {
+		"p1": [
+			"Greninja-Mega"
+		],
+		"p2": [
+			"Delphox-Mega"
+		]
+	},
+	"tera": {
+		"p1": [],
+		"p2": []
+	},
+	"ratings": {
+		"p1": null,
+		"p2": null
+	}
+}

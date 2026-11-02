@@ -1,0 +1,99 @@
+{
+	"id": "gen9championsvgc2026regmcbo3-2708057022",
+	"format": "[Gen 9 Champions] VGC 2026 Reg M-C (Bo3)",
+	"players": [
+		"ReanSchwarzer_VGC",
+		"malucodetilambuco"
+	],
+	"ratingAtStart": [
+		1296,
+		1327
+	],
+	"winner": "ReanSchwarzer_VGC",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 6,
+	"bo3": {
+		"wrapperId": "game-bestof3-gen9championsvgc2026regmcbo3-2708057021",
+		"gameNumber": 1,
+		"score": {
+			"p1": 0,
+			"p2": 0
+		}
+	},
+	"roster": {
+		"p1": [
+			"Tyranitar",
+			"Excadrill",
+			"Gholdengo",
+			"Sinistcha",
+			"Staraptor",
+			"Milotic"
+		],
+		"p2": [
+			"Golisopod",
+			"Basculegion",
+			"Pelipper",
+			"Archaludon",
+			"Sneasler",
+			"Salamence"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [
+			"Tyranitar",
+			"Excadrill",
+			"Gholdengo",
+			"Sinistcha",
+			"Staraptor",
+			"Milotic"
+		],
+		"p2": [
+			"Golisopod",
+			"Basculegion",
+			"Pelipper",
+			"Archaludon",
+			"Sneasler",
+			"Salamence"
+		]
+	},
+	"picks": {
+		"p1": [
+			"Staraptor",
+			"Gholdengo",
+			"Tyranitar"
+		],
+		"p2": [
+			"Golisopod",
+			"Basculegion",
+			"Pelipper",
+			"Archaludon"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Staraptor",
+			"Gholdengo"
+		],
+		"p2": [
+			"Golisopod",
+			"Basculegion"
+		]
+	},
+	"mega": {
+		"p1": [
+			"Staraptor-Mega"
+		],
+		"p2": [
+			"Golisopod-Mega"
+		]
+	},
+	"tera": {
+		"p1": [],
+		"p2": []
+	},
+	"ratings": {
+		"p1": null,
+		"p2": null
+	}
+}

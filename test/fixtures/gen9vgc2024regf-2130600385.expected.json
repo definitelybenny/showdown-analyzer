@@ -1,0 +1,92 @@
+{
+	"id": "gen9vgc2024regf-2130600385",
+	"format": "[Gen 9] VGC 2024 Reg F",
+	"players": [
+		"nbadrose2",
+		"Flipsicle"
+	],
+	"ratingAtStart": [
+		null,
+		null
+	],
+	"winner": "Flipsicle",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 6,
+	"bo3": {
+		"wrapperId": "game-bestof3-gen9vgc2024regf-2130598986",
+		"gameNumber": 2,
+		"score": {
+			"p1": 1,
+			"p2": 0
+		}
+	},
+	"roster": {
+		"p1": [
+			"Urshifu-Rapid-Strike",
+			"Tornadus",
+			"Archaludon",
+			"Comfey",
+			"Thundurus-Therian",
+			"Thwackey"
+		],
+		"p2": [
+			"Great Tusk",
+			"Flutter Mane",
+			"Kingambit",
+			"Zapdos",
+			"Torracat",
+			"Drednaw"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [],
+		"p2": []
+	},
+	"picks": {
+		"p1": [
+			"Tornadus",
+			"Archaludon",
+			"Thundurus-Therian",
+			"Urshifu-Rapid-Strike"
+		],
+		"p2": [
+			"Great Tusk",
+			"Zapdos",
+			"Kingambit",
+			"Flutter Mane"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Tornadus",
+			"Archaludon"
+		],
+		"p2": [
+			"Great Tusk",
+			"Zapdos"
+		]
+	},
+	"mega": {
+		"p1": [],
+		"p2": []
+	},
+	"tera": {
+		"p1": [
+			{
+				"species": "Archaludon",
+				"type": "Fairy"
+			}
+		],
+		"p2": [
+			{
+				"species": "Great Tusk",
+				"type": "Steel"
+			}
+		]
+	},
+	"ratings": {
+		"p1": null,
+		"p2": null
+	}
+}

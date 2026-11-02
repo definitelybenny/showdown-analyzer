@@ -1,0 +1,91 @@
+{
+	"id": "gen9championsvgc2026regmc-2708113349",
+	"format": "[Gen 9 Champions] VGC 2026 Reg M-C",
+	"players": [
+		"cap4816",
+		"mikumiku37"
+	],
+	"ratingAtStart": [
+		null,
+		null
+	],
+	"winner": "cap4816",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 11,
+	"bo3": null,
+	"roster": {
+		"p1": [
+			"Meowstic-F",
+			"Charizard",
+			"Kommo-o",
+			"Indeedee",
+			"Sneasler",
+			"Kingambit"
+		],
+		"p2": [
+			"Gholdengo",
+			"Volcarona",
+			"Garchomp",
+			"Incineroar",
+			"Rillaboom",
+			"Raichu"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [
+			"Meowstic-F",
+			"Charizard",
+			"Kommo-o",
+			"Indeedee",
+			"Sneasler",
+			"Kingambit"
+		],
+		"p2": [
+			"Gholdengo",
+			"Volcarona",
+			"Garchomp",
+			"Incineroar",
+			"Rillaboom",
+			"Raichu"
+		]
+	},
+	"picks": {
+		"p1": [
+			"Sneasler",
+			"Kingambit",
+			"Charizard",
+			"Kommo-o"
+		],
+		"p2": [
+			"Garchomp",
+			"Volcarona",
+			"Incineroar",
+			"Gholdengo"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Sneasler",
+			"Kingambit"
+		],
+		"p2": [
+			"Garchomp",
+			"Volcarona"
+		]
+	},
+	"mega": {
+		"p1": [],
+		"p2": [
+			"Garchomp-Mega-Z"
+		]
+	},
+	"tera": {
+		"p1": [],
+		"p2": []
+	},
+	"ratings": {
+		"p1": null,
+		"p2": null
+	}
+}

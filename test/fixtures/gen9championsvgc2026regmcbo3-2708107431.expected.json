@@ -1,0 +1,108 @@
+{
+	"id": "gen9championsvgc2026regmcbo3-2708107431",
+	"format": "[Gen 9 Champions] VGC 2026 Reg M-C (Bo3)",
+	"players": [
+		"VoltTank",
+		"MattiePowney"
+	],
+	"ratingAtStart": [
+		1114,
+		1000
+	],
+	"winner": "MattiePowney",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 10,
+	"bo3": {
+		"wrapperId": "game-bestof3-gen9championsvgc2026regmcbo3-2708106167",
+		"gameNumber": 2,
+		"score": {
+			"p1": 0,
+			"p2": 1
+		}
+	},
+	"roster": {
+		"p1": [
+			"Sneasler",
+			"Whimsicott",
+			"Charizard",
+			"Kingambit",
+			"Garchomp",
+			"Froslass"
+		],
+		"p2": [
+			"Gengar",
+			"Incineroar",
+			"Rillaboom",
+			"Kingambit",
+			"Sneasler",
+			"Hippowdon"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [
+			"Sneasler",
+			"Whimsicott",
+			"Charizard",
+			"Kingambit",
+			"Garchomp",
+			"Froslass"
+		],
+		"p2": [
+			"Gengar",
+			"Incineroar",
+			"Rillaboom",
+			"Kingambit",
+			"Sneasler",
+			"Hippowdon"
+		]
+	},
+	"picks": {
+		"p1": [
+			"Garchomp",
+			"Sneasler",
+			"Kingambit",
+			"Charizard"
+		],
+		"p2": [
+			"Gengar",
+			"Incineroar",
+			"Sneasler",
+			"Rillaboom"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Garchomp",
+			"Sneasler"
+		],
+		"p2": [
+			"Gengar",
+			"Incineroar"
+		]
+	},
+	"mega": {
+		"p1": [
+			"Charizard-Mega-Y"
+		],
+		"p2": [
+			"Gengar-Mega"
+		]
+	},
+	"tera": {
+		"p1": [],
+		"p2": []
+	},
+	"ratings": {
+		"p1": {
+			"name": "VoltTank",
+			"before": 1114,
+			"after": 1081
+		},
+		"p2": {
+			"name": "MattiePowney",
+			"before": 1000,
+			"after": 1053
+		}
+	}
+}

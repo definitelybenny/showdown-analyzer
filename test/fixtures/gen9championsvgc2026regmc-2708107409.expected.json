@@ -1,0 +1,87 @@
+{
+	"id": "gen9championsvgc2026regmc-2708107409",
+	"format": "[Gen 9 Champions] VGC 2026 Reg M-C",
+	"players": [
+		"FreePalestinaMX",
+		"chasefromtheplace"
+	],
+	"ratingAtStart": [
+		1463,
+		1405
+	],
+	"winner": "FreePalestinaMX",
+	"end": "inactivity",
+	"forfeiter": "p2",
+	"turns": 17,
+	"bo3": null,
+	"roster": {
+		"p1": [
+			"Charizard",
+			"Garchomp",
+			"Venusaur",
+			"Archaludon",
+			"Pelipper",
+			"Grimmsnarl"
+		],
+		"p2": [
+			"Tyranitar",
+			"Excadrill",
+			"Gholdengo",
+			"Milotic",
+			"Sinistcha",
+			"Staraptor"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [],
+		"p2": []
+	},
+	"picks": {
+		"p1": [
+			"Charizard",
+			"Grimmsnarl",
+			"Pelipper",
+			"Archaludon"
+		],
+		"p2": [
+			"Staraptor",
+			"Sinistcha",
+			"Tyranitar",
+			"Milotic"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Charizard",
+			"Grimmsnarl"
+		],
+		"p2": [
+			"Staraptor",
+			"Sinistcha"
+		]
+	},
+	"mega": {
+		"p1": [
+			"Charizard-Mega-Y"
+		],
+		"p2": [
+			"Staraptor-Mega"
+		]
+	},
+	"tera": {
+		"p1": [],
+		"p2": []
+	},
+	"ratings": {
+		"p1": {
+			"name": "FreePalestinaMX",
+			"before": 1463,
+			"after": 1480
+		},
+		"p2": {
+			"name": "chasefromtheplace",
+			"before": 1405,
+			"after": 1388
+		}
+	}
+}

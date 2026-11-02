@@ -1,0 +1,79 @@
+{
+	"id": "gen9championsvgc2026regma-2673627565",
+	"format": "[Gen 9 Champions] VGC 2026 Reg M-A",
+	"players": [
+		"EEEEEUREKA",
+		"ProStateDestroyer"
+	],
+	"ratingAtStart": [
+		null,
+		null
+	],
+	"winner": "ProStateDestroyer",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 13,
+	"bo3": null,
+	"roster": {
+		"p1": [
+			"Charizard",
+			"Venusaur",
+			"Farigiraf",
+			"Ditto",
+			"Forretress",
+			"Torkoal"
+		],
+		"p2": [
+			"Noivern",
+			"Slowking-Galar",
+			"Meowscarada",
+			"Kangaskhan",
+			"Froslass",
+			"Milotic"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [],
+		"p2": []
+	},
+	"picks": {
+		"p1": [
+			"Charizard",
+			"Venusaur",
+			"Torkoal",
+			"Ditto"
+		],
+		"p2": [
+			"Kangaskhan",
+			"Noivern",
+			"Slowking-Galar",
+			"Milotic"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Charizard",
+			"Venusaur"
+		],
+		"p2": [
+			"Kangaskhan",
+			"Noivern"
+		]
+	},
+	"mega": {
+		"p1": [
+			"Charizard-Mega-Y"
+		],
+		"p2": [
+			"Kangaskhan-Mega"
+		]
+	},
+	"tera": {
+		"p1": [],
+		"p2": []
+	},
+	"ratings": {
+		"p1": null,
+		"p2": null
+	}
+}

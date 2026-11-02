@@ -1,0 +1,98 @@
+{
+	"id": "gen9vgc2024regf-2131085055",
+	"format": "[Gen 9] VGC 2024 Reg F",
+	"players": [
+		"joshua Hernan",
+		"vals156"
+	],
+	"ratingAtStart": [
+		null,
+		null
+	],
+	"winner": "joshua Hernan",
+	"end": "win",
+	"forfeiter": null,
+	"turns": 3,
+	"bo3": null,
+	"roster": {
+		"p1": [
+			"Articuno",
+			"Ninetales-Alola",
+			"Arcanine-Hisui",
+			"Ogerpon-Wellspring",
+			"Landorus",
+			"Raging Bolt"
+		],
+		"p2": [
+			"Smeargle",
+			"Urshifu",
+			"Ogerpon-Wellspring",
+			"Rillaboom",
+			"Entei",
+			"Raging Bolt"
+		]
+	},
+	"showteamSpecies": {
+		"p1": [
+			"Articuno",
+			"Ninetales-Alola",
+			"Arcanine-Hisui",
+			"Ogerpon-Wellspring",
+			"Landorus",
+			"Raging Bolt"
+		],
+		"p2": [
+			"Smeargle",
+			"Urshifu",
+			"Ogerpon-Wellspring",
+			"Rillaboom",
+			"Entei",
+			"Raging Bolt"
+		]
+	},
+	"picks": {
+		"p1": [
+			"Ninetales-Alola",
+			"Ogerpon-Wellspring",
+			"Articuno"
+		],
+		"p2": [
+			"Smeargle",
+			"Urshifu",
+			"Raging Bolt",
+			"Rillaboom"
+		]
+	},
+	"leads": {
+		"p1": [
+			"Ninetales-Alola",
+			"Ogerpon-Wellspring"
+		],
+		"p2": [
+			"Smeargle",
+			"Urshifu"
+		]
+	},
+	"mega": {
+		"p1": [],
+		"p2": []
+	},
+	"tera": {
+		"p1": [
+			{
+				"species": "Articuno",
+				"type": "Ice"
+			}
+		],
+		"p2": [
+			{
+				"species": "Urshifu",
+				"type": "Poison"
+			}
+		]
+	},
+	"ratings": {
+		"p1": null,
+		"p2": null
+	}
+}
