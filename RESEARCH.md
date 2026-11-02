@@ -131,3 +131,52 @@ Parsing lines to handle: `|player|`, `|teamsize|`, `|poke|` (preview team), `|sh
 4. Bo3 grouping and the Stats views.
 5. Team import and "which team was this game" matching.
 6. Export/import JSON, then damage calc / speed tiers.
+
+## 7. Battle log parsing: how the existing tools do it (detailed)
+
+Read directly from a reference implementation's parser source. All of this works on the same protocol lines we receive live, so it ports straight to JS.
+
+### Inputs
+Replay JSON has `players[0..1]`, `format`, `uploadtime`, and `log` (newline-separated protocol). Live, we build the same thing from the room's message stream. Side ids are `p1` / `p2`; active slots are `p1a`, `p1b`, `p2a`, `p2b`.
+
+### Line-by-line extraction (single pass over `log.split('\n')`)
+| Line | Used for |
+|---|---|
+| `\|poke\|p1\|Species, L50, M\|item` | Team preview: full 6-mon roster per side. Species may be a wildcard (`Urshifu-*`) because the forme is hidden in preview. |
+| `\|showteam\|p1\|<packed>` | Open team sheet (OTS): packed team; first field before `\|` is the species. Reveals real formes, items, ability, moves. Only trusted if exactly 6 mons parse. |
+| `\|switch\|p1a: Nick\|Species, L50, M\|100/100` | **Picks** (a Pokemon is "brought" the first time it is switched in) and **leads** (first 2 distinct switch-ins per side). Also builds `nickname -> species` and `slot -> species` maps used by every later line. Can reveal a hidden forme. |
+| `\|drag\|` | Same as switch for forced switch-ins (used for forme reveal, not leads). |
+| `\|move\|p1a: Nick\|Move\|p2a: Target` | Move usage: resolve the actor through the nickname/slot map, count per species per move. |
+| `\|-terastallize\|p1a: Nick\|Fire` | Which mon Terastallized and to what type. One per side per game. |
+| `\|detailschange\|p1a: Nick\|Charizard-Mega-Y` | Mid-battle forme change. Only Mega/Primal suffixes (`-Mega`, `-Mega-X`, `-Mega-Y`, `-Primal`) rewrite the roster slot; Tera and Ogerpon-mask changes also fire this line and must be ignored. On a Mega, rename the species in picks, leads, move counts and tera so it stays one Pokemon. |
+| `\|-mega\|p1a: Nick\|Species\|Stone` | Confirms the original held item (stones cannot be transferred). |
+| `\|turn\|N` | Turn count = max N seen. |
+| `\|win\|Name` | Winner (by player name, case-insensitive compare). Absent = tie/abandoned. |
+| `\|raw\|Name's rating: 1279 &rarr; <strong>1294</strong>` | Ladder ELO before/after per player. |
+| `\|tier\|... (Bo3)` + `\|uhtml\|bestof\|...<strong>Game 2</strong> of <a href="/game-bestof3-<fmt>-<id>">` | Bo3 detection, game number, and shared set id. Regex: `Game (\d+)` and `href="/game-bestof3-([^"]+)"`. No bestof line = treat as Bo1. |
+
+### Key problems the parser has to solve (and how)
+1. **Nicknames**: `|move|` and `|-terastallize|` use the nickname, not the species. Maintain `nick -> species` per side, populated from `|switch|`. (Better: key by slot AND nickname, and update on every switch since slots change.)
+2. **Hidden formes**: preview shows `Urshifu-*`, and Zacian/Zamazenta appear without `-Crowned` in preview. Keep the roster entry uncertain until a switch / detailschange / showteam reveals it; then overwrite the slot. Match by Pokedex number (not base species name) so e.g. Zamazenta-Crowned finds its Zamazenta slot. Wildcard slots (`X-*`) are matched first so a different mon with the same dex number is not clobbered.
+3. **Species to roster-entry matching**: resolve every species through a canonical name (strip forme noise) and fall back to dex number, then roster index. The simple fallback (prefix match before first hyphen) is wrong for several formes, so we want a real normalizer. Showdown's page already has `Dex`/`BattlePokedex` we can use.
+4. **Pick detection**: "brought" = distinct species switched in. Un-brought backs stay unknown for the opponent (we only see their 6 from preview). Our own picks are exact.
+5. **Leads**: first two *distinct* switch-ins per side. Order-independent for pair stats (sort the pair).
+6. **Which side am I**: cascade, strongest first: (a) exactly one side's username is mine AND its revealed roster matches my team, (b) exactly one side's username is mine, (c) exactly one side's roster matches my team, (d) default p1. The team match compares base species (Mega/Tera variants collapsed, but competitively distinct formes like Ogerpon masks or Calyrex-Shadow/Ice kept separate). In-client we can skip this: `|updateuser|` tells us who "me" is, and for Bo3 both players may be the same user name only in mirror/self-play (edge case, still handle via cascade).
+7. **Original items**: only the team sheet (OTS) or `|-mega|` reveal the *starting* item; later item events (Trick, Knock Off) change it, so do not infer from `|-item|` / `|-enditem|`.
+
+### Derived stats (all computed over a list of games, not stored)
+- **Usage**: games where the Pokemon was in my picks / total games. Win rate = wins in those games / usage.
+- **Leads**: per Pokemon (games led, win rate) and per unordered lead pair (count, win rate); keep top N.
+- **Tera / Mega**: games where it terastallized (or mega-evolved) and win rate in those games.
+- **Move usage**: per Pokemon, per move, total uses and each move's share of that Pokemon's moves.
+- **Opponent matchups**: for each opposing species: games against, wins, win rate, times on their team, times brought, attendance = brought / on team. Best/worst lists need a minimum sample (they use 3). Normalize species to base name before aggregating.
+- **Custom matchup query**: user picks opposing species; report per-species win rate, overall win rate in games where the opponent had any of them, and exact-match games where they had all of them.
+- Known bug to avoid in the reference: one counter (games-with-pokemon) is incremented in two places, inflating it. Also win rate per move was computed but never surfaced; we can surface it.
+
+### Match (Bo3) grouping
+Group by the set id from the `bestof` line; order by game number. Two logs are the same set only if both are Bo3 and ids are equal. Live, the set id is also in the wrapper room id `game-bestof3-<format>-<id>`, and each game is `battle-<format>-<n>`, so we can group without any parsing of HTML.
+
+### Implementation plan for our Core parser (JS, pure)
+- `parseLog(lines, {me})` returns `{players, teams{p1,p2}, picks, leads, tera, mega, moves, winner, turns, rating, bo3{matchId, game}}`.
+- Streaming variant for live play: feed lines as they arrive per room, finalize on `|win|` / `|tie|` or room close.
+- Fixtures: save real logs for (a) Bo1, (b) Bo3 game 1/2/3, (c) OTS format, (d) mega, (e) Urshifu/Zacian hidden formes, (f) a forfeit/tie. Test with `node --test`.
