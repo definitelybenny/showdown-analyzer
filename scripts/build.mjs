@@ -35,6 +35,7 @@ const result = await build({
 	legalComments: 'none',
 	target: 'es2020',
 	logLevel: 'warning',
+	define: { __APP_VERSION__: JSON.stringify(pkg.version) },
 });
 
 const out = path.join(root, 'showdown-analyzer.user.js');
