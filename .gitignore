@@ -3,3 +3,4 @@ node_modules/
 *.local.md
 .replay-cache/
 .scratch/
+dev/out/

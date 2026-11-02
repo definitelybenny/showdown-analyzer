@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Showdown Analyzer UI harness</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- the real client stylesheet, so global rules that could leak into the panel show up in screenshots -->
+<link rel="stylesheet" href="https://play.pokemonshowdown.com/style/font-awesome.css">
+<link rel="stylesheet" href="https://play.pokemonshowdown.com/style/client.css">
+<style>
+  body { margin: 0; padding: 0; background: #fff; }
+  html.dark body { background: #1b1d21; }
+  #frame { width: 400px; max-width: 100%; margin: 0 auto; }
+  #errors { white-space: pre-wrap; color: #b00; background: #fee; font: 11px monospace; padding: 4px; }
+</style>
+</head>
+<body>
+<div id="errors" hidden></div>
+<div id="frame"><div id="sa-root"></div></div>
+<script>
+  // dex=1: load the client's own Dex (icon sheet) before the app mounts
+  if (new URLSearchParams(location.search).get('dex')) {
+    window.Config = window.Config || { routes: {}, server: {} };
+    ['https://play.pokemonshowdown.com/js/battledata.js','https://play.pokemonshowdown.com/data/pokedex-mini.js'].forEach(function (u) { document.write('<script src="' + u + '"><\/script>'); });
+  }
+</script>
+<script src="seed.js"></script>
+<script src="harness.js"></script>
+</body>
+</html>
