@@ -1,0 +1,16 @@
+{
+  "name": "showdown-analyzer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tampermonkey userscript: battle recorder/analyzer tab for Pokemon Showdown",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "build": "node scripts/build.mjs",
+    "fixtures": "node scripts/fetch-fixtures.mjs"
+  },
+  "devDependencies": {
+    "@pkmn/dex": "*",
+    "esbuild": "*"
+  }
+}
