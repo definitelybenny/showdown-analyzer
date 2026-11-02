@@ -499,6 +499,31 @@
     attempt2();
   }
 
+  // src/store/idb.js
+  var STORES = { games: "roomid", sets: "id", teams: "id", settings: "name", meta: "key" };
+  var MIGRATIONS = [
+    {
+      version: 1,
+      up(db, tx) {
+        for (const [name, keyPath] of Object.entries(STORES)) {
+          if (!db.objectStoreNames.contains(name)) db.createObjectStore(name, { keyPath });
+        }
+        tx.objectStore("meta").put({ key: "schemaVersion", value: 1 });
+      }
+    }
+  ];
+  var SCHEMA_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;
+
+  // src/core/names.js
+  function toID(text) {
+    return String(text == null ? "" : text).toLowerCase().replace(/[^a-z0-9]+/g, "");
+  }
+  var HYPHEN_BASES = ["Ho-Oh", "Porygon-Z", "Jangmo-o", "Hakamo-o", "Kommo-o", "Type: Null", "Wo-Chien", "Chien-Pao", "Ting-Lu", "Chi-Yu"];
+  var HYPHEN_BASE_IDS = new Map(HYPHEN_BASES.map((n) => [toID(n), n]));
+
+  // src/capture/index.js
+  var LINGER_MS = 10 * 60 * 1e3;
+
   // src/main.js
   var STYLE_ID = "sa-style";
   var CSS = `
@@ -510,6 +535,7 @@
 #${ROOT_ID} .sa-muted{opacity:.7}
 `;
   var seen = { rooms: /* @__PURE__ */ new Set(), in: 0, out: 0 };
+  var capture = null;
   var renderTimer = null;
   function row(doc, label, value) {
     const div = doc.createElement("div");
@@ -544,6 +570,14 @@
     nodes.push(row(doc, "Messages", `${seen.in} in, ${seen.out} out`));
     nodes.push(row(doc, "Rooms seen", String(seen.rooms.size)));
     nodes.push(row(doc, "Battle rooms", battles.length ? battles.join(", ") : "none"));
+    if (capture) {
+      const st = capture.captureStatus();
+      nodes.push(row(doc, "Recording", st.live.length ? st.live.map((l) => l.roomid + (l.partial ? " (partial)" : "")).join(", ") : "idle"));
+      nodes.push(row(doc, "Saved games", String(st.savedCount) + (st.lastSaved ? ` (last: ${st.lastSaved.result || "?"} vs ${st.lastSaved.opp || "?"})` : "")));
+      if (st.hint) nodes.push(row(doc, "Hint", st.hint));
+      const err = st.errors[st.errors.length - 1];
+      if (err) nodes.push(row(doc, "Last error", err.message));
+    }
     const problem = hook.error || (hook.hooked ? "" : getTabDiagnostic());
     if (problem) {
       const diag = doc.createElement("div");

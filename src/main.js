@@ -1,7 +1,9 @@
 // Entry point: hook the client, open the Analyzer tab (not focused) and render a proof-of-life view.
-import { startHook, onMessage, getUserName, getBattleRooms, getHookStatus } from './host/hook.js';
+import { startHook, onMessage, getUserName, getMyTeams, getBattleLog, getBattleRooms, getHookStatus } from './host/hook.js';
 import { openTab, onReady, getRoot, getTabMode, getTabDiagnostic, resetTabUrl } from './host/tab.js';
 import { ROOT_ID } from './host/detect.js';
+import { openRepo } from './store/repo.js';
+import { startCapture } from './capture/index.js';
 
 const STYLE_ID = 'sa-style';
 const CSS = `
@@ -14,6 +16,7 @@ const CSS = `
 `;
 
 const seen = { rooms: new Set(), in: 0, out: 0 };
+let capture = null;
 let renderTimer = null;
 
 function row(doc, label, value) {
@@ -50,6 +53,14 @@ function render() {
 	nodes.push(row(doc, 'Messages', `${seen.in} in, ${seen.out} out`));
 	nodes.push(row(doc, 'Rooms seen', String(seen.rooms.size)));
 	nodes.push(row(doc, 'Battle rooms', battles.length ? battles.join(', ') : 'none'));
+	if (capture) {
+		const st = capture.captureStatus();
+		nodes.push(row(doc, 'Recording', st.live.length ? st.live.map(l => l.roomid + (l.partial ? ' (partial)' : '')).join(', ') : 'idle'));
+		nodes.push(row(doc, 'Saved games', String(st.savedCount) + (st.lastSaved ? ` (last: ${st.lastSaved.result || '?'} vs ${st.lastSaved.opp || '?'})` : '')));
+		if (st.hint) nodes.push(row(doc, 'Hint', st.hint));
+		const err = st.errors[st.errors.length - 1];
+		if (err) nodes.push(row(doc, 'Last error', err.message));
+	}
 	const problem = hook.error || (hook.hooked ? '' : getTabDiagnostic());
 	if (problem) {
 		const diag = doc.createElement('div');
