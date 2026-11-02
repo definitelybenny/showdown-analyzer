@@ -10,7 +10,7 @@
     "fixtures": "node scripts/fetch-fixtures.mjs"
   },
   "devDependencies": {
-    "@pkmn/dex": "*",
-    "esbuild": "*"
+    "@pkmn/dex": "^0.10.12",
+    "esbuild": "^0.28.2"
   }
 }

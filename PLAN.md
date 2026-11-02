@@ -149,3 +149,13 @@ Views (all computed from stored games, with sample sizes shown and a minimum-sam
 - RESEARCH.md stays factual; decisions live here. If research changes a decision, update the table in section 1 and note why.
 - Do not mention third-party tool names beyond Showdown, its open-source projects, and generic data sources in this repository (see user instruction); local-only notes go in `*.local.md` (gitignored).
 - No milestone expands scope silently: new ideas go to M7+.
+
+## M1 notes / deviations
+
+- `docs/FINDINGS.md` was not created (the tooling blocked writing it); the findings that would go there were handed back with the M1 report and should be added to the repo.
+- Extra files: `scripts/discover.mjs` (scans search results and prints per-replay features to pick fixtures) and an npm script `fixtures`.
+- 23 fixtures instead of about 20: they add Reg M-C games played as a Bo3 under the non-`bo3` format id, a Ditto game, an Ally Switch game and two hidden-forme cases. Bo3 sets A to D are complete real sets (3, 3, 3 and 2 games).
+- No public tie replay was found in about 1,500 sampled logs, and no log with Zacian/Zamazenta-Crowned; both paths are covered by synthetic tests rather than fixtures.
+- `expected.json` files were produced by the parser and then cross-checked by an independent regex extractor (players, winner, end reason, forfeiter, turns, rosters, showteam species, picks, leads, mega formes, Tera types, ratings, Bo3 header and score) and by reading the logs of the forfeit, Illusion, Ditto and Ally Switch games.
+- Bo3 detection uses the `bestof` header only (some non-`bo3` format ids are played as best-of-3).
+- Moves with a `[from]` tag (Dancer, Instruct, called moves) are not counted as move usage.
