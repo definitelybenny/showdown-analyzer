@@ -180,3 +180,147 @@ Group by the set id from the `bestof` line; order by game number. Two logs are t
 - `parseLog(lines, {me})` returns `{players, teams{p1,p2}, picks, leads, tera, mega, moves, winner, turns, rating, bo3{matchId, game}}`.
 - Streaming variant for live play: feed lines as they arrive per room, finalize on `|win|` / `|tie|` or room close.
 - Fixtures: save real logs for (a) Bo1, (b) Bo3 game 1/2/3, (c) OTS format, (d) mega, (e) Urshifu/Zacian hidden formes, (f) a forfeit/tie. Test with `node --test`.
+
+---
+# Part 2: Verified protocol, client, and platform findings (2026-11-02)
+
+Legend: [V] verified against live site/source, [S] from docs/search, [?] unverified. This part supersedes anything above it that conflicts (notably: the current ladder format has **no Tera**).
+
+## 8. Protocol facts (sources: pokemon-showdown `sim/SIM-PROTOCOL.md`, `sim/*.ts`, `server/room-battle*.ts`)
+
+### Line formats
+- `|player|p1|NAME|AVATAR|RATING`, `|teamsize|p1|N` (4 in VGC), `|gametype|doubles`, `|gen|9`, `|tier|[Gen 9 Champions] VGC 2026 Reg M-C (Bo3)`, `|rule|...`, `|clearpoke`, `|poke|p1|Species, L50, F|` (item field is literal `item` or blank), `|teampreview|4`.
+- `|showteam|p1|<packed>` [V]: with Force Open Team Sheets (Bo3 format) it is public, so spectators and players both get it. Per set: `name|species|item|ability|moves(csv)|nature|evs|gender|ivs|shiny|level|extra`; for team sheets name is blank so the first field is the species, evs/ivs blank, nature filled in the Champions mod, level only if not 100. Sample from a live log: `Froslass||Froslassite|CursedBody|Blizzard,ShadowBall,AuroraVeil,Protect|Timid||F|||50|]Dragonite||...`. **This gives us the opponent's full sets (item, ability, 4 moves, nature) for free.** Item/ability/move names are packed IDs without spaces (`ShadowBall`, `CursedBody`) and need normalizing via Dex.
+- `|switch|p1a: Nick|Species, L50, M|100/100` (same shape for `|drag|`). HP is `cur/max` for your side, `pct/100` for the foe.
+- `|move|p1a: X|Move|p2a: Y` (+ `[miss]`, `[from]`, `[still]`), `|faint|POKE`, `|turn|N`.
+- `|-mega|POKE|BASESPECIES|STONE` then usually `|detailschange|POKE|Species-Mega|HP`. `|-terastallize|POKE|Type` exists in other formats only. Also `|-formechange|`, `|replace|` (Illusion reveal), `|-transform|` (temporary, does not change details).
+- `|win|NAME` (two allies: `A & B`), `|tie`. Forfeit: `|-message|NAME forfeited.` or `NAME lost due to inactivity.` followed by `|win|` [V in a live log].
+- `|raw|NAME's rating: 1293 &rarr; <strong>1312</strong><br />(+19 for winning)` arrives right after `|win|` [V live log].
+- `|request|{...}` is player-only and NOT part of the battle log. Team-preview request: `{teamPreview:true, maxChosenTeamSize:4, side:{pokemon:[...]}}` in team-slot order. After picking, the next request's `side.pokemon` is reordered to the picks (first 2 = leads, `active:true`). Each pokemon has `ident, details, condition, active, stats, moves, baseAbility, item, ability` (and `teraType`/`terastallized` except in the Champions mod).
+- `|updateuser|NAME|NAMED|AVATAR|SETTINGS_JSON`, `|uhtml|NAME|HTML`, `|inactive|...` timer lines.
+
+### Bo3 mechanics [V from server source + a live replay]
+- **Wrapper room** `game-bestof3-<formatid>-<N>`: no battle protocol. Gets `|html|<h2>Game 1</h2>`, per-game links, `|html|NAME won game N!`, set end `|win|NAME` (or `|tie`), and `||NAME forfeited the series.`.
+- **Game rooms** `battle-<formatid>-<M>`: M comes from a global counter, NOT derived from the wrapper id and not necessarily consecutive. Example from a real replay: game room `...-2708117051`, its wrapper `game-bestof3-...-2708115532`. So the **only link between games is the wrapper id**, found in the `|uhtml|bestof|` line's href. (The earlier idea of deriving it from the room id is wrong.)
+- Each game log begins with `|uhtml|bestof|<h2><strong>Game N</strong> of <a href="/game-bestof3-<fmt>-<wrapperN>">a best-of-3</a></h2>` and an `|html|` score table with win circles [V]. The previous game's room gets `|uhtml|next|Next: <a href="/battle-...">Game N of 3</a>`.
+- Between games: 40 s ready timer (`BEST_OF_IN_BETWEEN_TIME`), `/confirmready`, then the next game starts regardless.
+- **The team is NOT re-chosen between games** (same packed team), but every game has a fresh team preview where 4 are picked again, so brings/leads can change.
+- **Rating**: individual games are unrated; the ladder update happens once at set end, and the `|raw|` rating lines go to the LAST game's battle room, after the wrapper's `|win|`. Per-game ELO is therefore not available; only a set-level ELO delta. (The live sample, a forfeit in game 2, did show rating lines: treat rating lines as "set ended here".)
+- Replay search can return `rating: null` and `private`/`password` fields.
+
+### Team preview picks
+- Client sends `/team 1234` (1-based; order = lead, lead, back, back). Nothing is echoed in the protocol; we learn our own picks from the next `|request|` order, and the opponent's only from `|switch|`/`|drag|`. `|teamsize|` says both sides bring 4.
+- With open team sheets both sides' full 6 appear in `|showteam|` (public), so the opponent's roster and sets are fully known; their 4 picks are only known as they appear (unrevealed backs stay unknown).
+
+### Edge cases
+- Zacian/Zamazenta show as `Zacian-*` in preview; showteam rewrites to `-Crowned` when holding the Rusted item. With Species Reveal Clause off, Urshifu, Greninja, Gourgeist, Pumpkaboo, Xerneas, Silvally, Dudunsparce also show `-*`.
+- Champions mod: Mega only, **no Tera**, one Mega per team per battle (source), new Z-Megas (e.g. Absol Z, Lucario Z, Garchomp Z [S]). Expect forme names like `-Mega-Z` [?]. Still handle `|-terastallize|` for other formats.
+- Illusion: `|switch|` shows the disguise, `|replace|` reveals. Nicknames: identity is `p1a: Nick`, species only in DETAILS.
+- Spectators see no `|request|` and see foe HP as percent, but do see `|showteam|` under Force OTS.
+- `/savereplay` result is a popup `|html|<p>Your replay has been uploaded!...` with `https://replay.pokemonshowdown.com/<fullid>`.
+
+### Real log skeleton [V] (a Reg M-C Bo3 game 2 that ended by forfeit)
+```
+|uhtml|bestof|<h2><strong>Game 2</strong> of <a href="/game-bestof3-...-2708115532">a best-of-3</a></h2>
+|gametype|doubles / |player|p1|NAME|avatar|rating / |gen|9 / |tier|... / |rated| / |rule|...
+|clearpoke / |poke|p1|Froslass, L50, F| x6 per side / |teampreview|4
+|showteam|p1|<packed> / |showteam|p2|<packed>
+|teamsize|p1|4 / |teamsize|p2|4 / |start
+|switch|p1a: ... (x4 leads) / |turn|1 ... / |faint| ... / |-message|X forfeited. / |win|Y
+|raw|Y's rating: 1293 &rarr; <strong>1312</strong><br />(+19 for winning)
+|raw|X's rating: 1201 &rarr; <strong>1182</strong><br />(-19 for losing)
+```
+
+## 9. Showdown client internals (sources: live site JS, smogon/pokemon-showdown-client, Showdex)
+
+- **Default client is the classic Backbone one** (`js/oldclient/*.js`, `window.app`). The Preact client lives at `/beta` (`js/client-main.js`, `window.PS`). No announced deprecation or migration date found [V]; the repo is actively committed to (late Oct 2026). **Support both** (detect: classic = `typeof window.app?.receive === 'function'`; Preact = `typeof window.PS?.join === 'function'`, same as Showdex).
+- **Classic globals**: `app` (rooms, roomList, sideRoomList, curRoom, user, topbar, socket, send, receive, `_addRoom`, `focusRoom`, `focusRoomRight`), `Storage` (teams, prefs), `Dex`, `BattleLog`, `toID`, `Battle`, `BattlePokedex`/`BattleMovedex`/`BattleItems`/`BattleAbilities`. **Preact globals**: `PS` (rooms, roomTypes, leftRoomList/rightRoomList, teams, user, join, leave, focusRoom, addRoomType, send, receive), `Dex`, `Teams`. That `PSRoomPanel`/`PSPanelWrapper`/`preact` are `window.*` is [?] in general, but the existing reference script uses `window.PSRoom` etc. and works.
+- **Custom tab**: classic = `app._addRoom('view-<id>','html',true,title)` (nojoin), set `isSideRoom`, move to `sideRoomList`, `focusRoomRight`, override `leave`/`requestLeave`; icon via patching `app.topbar.renderRoomTab` (a `[X]` title prefix also renders an icon). `_addRoom` does not call `updateSideRoom()`/`updateLayout()` (`addRoom` does). Preact = `PS.addRoomType(PanelClass)` + `PS.join(id,{noURL:true,autofocus,autoclosePopups:false})`. Both are undocumented internals; stability risk is higher on Preact (active development) than classic (effectively frozen).
+- **Teams**: classic `Storage.teams[]` = `{name, format, gen, team: <packed>, folder,...}` from `localStorage['showdown_teams']`; helpers `Storage.unpackTeam`, `Storage.exportTeam`, `Storage.whenTeamsLoaded`. Preact `PS.teams.list` = `{name, format, folder, packedTeam,...}`, helpers `Teams.unpack/pack/export`. **We can offer "my teams" straight from the user's Showdown teambuilder, no paste import.**
+- **Username**: classic `app.user.get('name'|'userid')`; Preact `PS.user.name`/`.userid`/`.named`.
+- **Battle log without parsing the socket**: `app.rooms[id].battle.stepQueue` (classic) / `PS.rooms[id].battle` (Preact) is a `string[]` of protocol lines; join with `\n` for replay format. `battle.ended` after `|win|`/`|tie`. Also `battle.p1.name`, `tier`, `turn`, `rated`, `mySide`, `myPokemon` (own team, from the request). Caveats: log only covers what the room received since joining; closing the room destroys the battle (grab the log first); `|request|` is NOT in stepQueue; `battle.subscribe` has a single listener slot (do not overwrite it; wrap or poll). Our receive/send hook remains the more robust capture path, with `stepQueue` as a cross-check and backfill.
+- **Static assets** [V]: sprites `https://play.pokemonshowdown.com/sprites/{gen5,gen5ani,ani,dex,home-centered}/<id>.(png|gif)`, `types/<Type>.png`, `itemicons-sheet.png`, `pokemonicons-sheet.png` (40x30 grid; `Dex.getPokemonIcon(species)` returns the CSS background). Use `Dex.resourcePrefix`. Data files are CORS-open: `data/pokedex.(js|json)`, `moves.(js|json)`, `items.js`, `abilities.js`, `typechart.js`, `aliases.js`, `formats.js`, `learnsets.json` (items/typechart/aliases `.json` 404). Dex API: `toID`, `Dex.species.get/moves.get/items.get/abilities.get` (exists, baseSpecies, forme, types, baseStats), `Dex.forGen`, `Dex.formats.get`. **Caveat: the Champions mod's species/Mega/Z-Mega data may not be in the client's default Dex tables [?]; verify in a console.**
+- **CSP**: no CSP header or meta seen on `/` or `/beta` [V]; inline scripts, `<script>` injection and fetches work. The page uses a framebuster (`if (self===top) ... else top.location = self.location`), so **iframes are not an option**; stay in-client.
+- **Damage calc**: not bundled in the client (only rough tooltip estimates). `@smogon/calc` (smogon/damage-calc, npm) would have to be bundled or loaded via `@require`.
+- **Gotchas**: `app = new App()` runs in an inline script at the end of body; with document-start you must wait for `window.app`, `app.rooms`, `app.user`, `Storage.whenTeamsLoaded` (poll). Preact: `PS` is created when deferred `client-main.js` runs. With any `@grant` you are sandboxed: use `unsafeWindow`. No service worker. Clicking the page background calls `app.dismissPopups()`, which can close custom overlays. Classic routes `*path` to `tryJoinRoom`, so navigating to our tab id can try to /join it on the server; use `noURL` (Preact) and `history.replaceState` back to `/`. Layout switches by window width (>=916 px shows the rooms list; mini tabs under 420 px).
+
+## 10. Userscript platform findings (Tampermonkey etc.)
+
+- **Storage**: GM_* values are per-script, live in the extension, survive "clear site data"; limits are undocumented [?] and each set likely re-serializes the script's whole store, so one giant blob is a bad idea. TM 5.3+ has batch `GM_setValues/getValues/deleteValues`; the `GM.*` promise API is the portable one (Greasemonkey 4 supports only `GM.*`). `GM_addValueChangeListener` gives cross-tab sync for GM values only.
+- **IndexedDB / localStorage on play.pokemonshowdown.com**: real browser quotas and indexes (IndexedDB), async; but shared origin with Showdown's own storage (teams live in `localStorage['showdown_teams']`) and wiped by clear-site-data. Use a unique DB/key prefix, call `navigator.storage.persist()`, and sync tabs with `BroadcastChannel`.
+- **Recommendation**: IndexedDB for games (large, queryable), GM storage for small settings, plus JSON export/import as backup and the cross-device story. A GM-only design is viable at a few hundred games if keyed one-key-per-game with a small index.
+- **Grants/injection**: `@grant none` runs in the page world (direct access to `app`/`PS`); any `@grant GM_*` sandboxes (use `unsafeWindow`). A single script cannot mix. Replay JSON and pokepast.es are CORS-friendly [V] (replay.pokemonshowdown.com allows `Origin: https://play.pokemonshowdown.com`; pokepast.es `/<id>/json` and `/raw` allow `*`), so we likely need **no GM_xmlhttpRequest**; `@grant none` plus IndexedDB gives maximal Violentmonkey/Greasemonkey portability and removes the need for a separate page-hook injection. Trade-off: the reference script uses grants for GM storage; we would use IndexedDB instead.
+- **MV3 / Chrome** [S]: Tampermonkey 5.3+ uses the `userScripts` API; the user must enable "Allow User Scripts" (Chrome 138+, extension details page) or Developer Mode, else scripts silently do not run. Document in README. Firefox keeps MV2.
+- **Distribution**: `@updateURL`/`@downloadURL` to raw GitHub (cache about 5 min [?]); bump `@version` for updates; GitHub Releases give immutable per-version URLs. Greasy Fork: no minified/obfuscated code, 2 MB cap, libraries via `@require`, readable single-file bundle OK, update checks at most daily.
+- **Testing**: pure Core under `node --test` against saved replay JSON fixtures (fetch `https://replay.pokemonshowdown.com/<id>.json`; list via `search.json?format=<id>` [V]); UI via Playwright with `addInitScript`; mock GM_* if used; a mock `app`/`PS` harness page for tab code. Real-Showdown e2e is flaky (login).
+- **Replay endpoints** [V]: `https://replay.pokemonshowdown.com/<id>.json` (`{id, format, players, log, uploadtime, rating, ...}`), `<id>.log`, `search.json?format=<fmt>` (also `user=`), CORS as above. Useful for backfilling old games and collecting fixtures.
+
+## 11. VGC context (as of 2026-11-02)
+
+- **Current format**: `[Gen 9 Champions] VGC 2026 Reg M-C` = `gen9championsvgc2026regmc` (Open Team Sheets, `bestOfDefault`), Bo3 = `gen9championsvgc2026regmcbo3` (Force OTS, Best of 3) [V in formats.ts and live replays]. Earlier: Reg M-A (`...regma[bo3]`, 2026-04-08 to 06-17), Reg M-B (`...regmb[bo3]`, retired), older non-Champions `gen9vgc2025regi` etc. **M-C runs 2026-09-09 to 2026-12-02** [S, official press release]; expect an M-D after that. Detect with `^gen9championsvgc\d{4}reg[a-z]+(bo3)?$` and make it configurable; do not hardcode.
+- **Mechanics**: Champions = Mega Evolution only (no Tera), Z-Megas added in M-C. The parser must treat Mega as first-class and Tera as optional.
+- **Team sources**: pokepast.es `/<id>` (HTML), `/<id>/raw` (text), `/<id>/json` (`{paste,title,author,notes}`), CORS `*` [V]. Pokebin not researched [?]. From Showdown we get teams directly, plus `|showteam|` in OTS games, so paste import is optional.
+- **Tournament/usage data**: no public LabMaus API found [?]. Limitless has developer docs (docs.limitlesstcg.com/developer.html) [S]; Pikalytics exposes markdown-ish pages under `/ai/...` with unknown terms and an unverified API path [?]. All optional/later.
+- **To verify empirically in a real browser before/while coding**: Showdown CSP on subpaths, `window.PSRoomPanel` etc. exposure, Champions-mod Dex data availability, GM storage size behaviour, how the live client handles `game-bestof3-*` wrapper rooms (does it open a room for the wrapper, and does our hook see its messages?), exact Z-Mega forme names.
+
+## 12. Feature, UX and data-model detail of the reference recorder (read from its source)
+
+The reference is a web SPA (React + Tailwind) with a server and DB. Its frontend only renders parsed `battleData`; everything below is what we need to replicate or improve in a tab inside Showdown. Game context: Pokemon Champions Reg M-A/B/C, Mega is the mid-battle mechanic, and its calc "Gen 10" mode means Champions with Stat Points (SPs).
+
+### 12.1 Navigation and setup
+- Per-team sidebar tabs: Replays, Game by Game, Match by Match, Usage Stats, Matchup Stats, Move Usage, Matchup Planner, Pokemon Notes, Calculator, Speed Tiers, Type Chart. Team menu: edit, export, share, delete. Home page: global tiles (teams, games, wins, win rate), team cards with a regulation chip and win rate, filters (text/Pokemon tag, regulation select, folder).
+- Creating a team needs: name, paste URL, optional regulation, and **at least one tracked Showdown username** (needed to decide which side is "me"). We do not need any of that: username comes from the client, teams come from the teambuilder.
+- Regulation is a free-form string; `isMegaRegulation` (regex `Regulation\s+M(-[A-Z])?$`) toggles the Mega vs Tera columns. We should derive it from the format id instead.
+
+### 12.2 Pages (what is shown, controls, data)
+Valid games for stats = result is win/loss and parsed data present.
+- **Usage Stats**: table per team Pokemon: Usage (count, %), Win %, Lead usage, Lead win %, Mega-or-Tera usage and win %. Two cards, "Most Common Leads" and "Best Leads (Win %)", top 6 unordered pairs with sprites, count, `xW-yL`, win %. Win-rate colour: >=60 green, >=40 yellow, else red. "Based on N games". **No filters at all** (opportunity: date range, format/regulation, Bo3-only, opponent rating, per-team).
+- **Matchup Stats**: four top-5 cards (best/worst matchups with min 3 encounters; highest/lowest attendance = brought / on team). Per opposing Pokemon: timesOnTeam, timesBrought, gamesAgainst, winsAgainst, winRate, attendanceRate. "Custom Team Analysis": 6 slots with a search dropdown over every opposing Pokemon ever seen, per-slot win %, W-L, encounters, plus a plain-mean average.
+- **Move Usage**: pie chart per Pokemon from move counts; slices under 5% grouped as "other"; moves coloured green if in the registered set, red if "not in paste" (useful for spotting set changes). With open team sheets we can do better (compare against the actual set).
+- **Game by Game**: filters result (all/win/loss), reviewed status, sort (date/result/opponent, asc/desc), tag filter by opposing Pokemon, bulk mark reviewed/unreviewed, summary (total/wins/losses/win rate). One card per game.
+- **Match by Match** (Bo3): tiles (matches, wins, losses, win rate); search box with prefixes `tag:x`, `user:x`, or plain opposing Pokemon names (tags AND together). One card per match.
+- **Replays**: flat list, filter by opposing Pokemon, copy all / filtered URLs, add replay, delete, edit note.
+- **Matchup Planner** (opponent prep): per opposing team (from a paste): your Leads(2)+Back(2) plan(s) and notes, colour label (9 colours), drag-reorder, collapse/expand all, filter by opposing Pokemon, "Group by leads" (one card per unordered lead pair across all plans, sorted by number of matchups), and a "Recent Tour" browser that imports tournament teams as matchup teams. Each opponent team shows "N confirmed - M possible" past games against that exact team (see 12.5).
+- **Pokemon Notes**: per team member: free-text note and a list of saved calc strings (coloured by OHKO/2HKO/3HKO regex). Keyboard: Ctrl/Cmd+Enter save, Esc cancel.
+- **Speed Tiers**, **Calculator**: see 12.6 and 12.7.
+- **Type Chart**: defensive only: 18 attacking types x your 6 Pokemon, cells 4x/2x red, 1/2x-1/4x green, 0 grey; per-column weak/resist counts; accounts for ability immunities and filter-type effects.
+
+### 12.3 Cards
+- **Game card**: result badge, opponent, date, replay link, Reviewed toggle; opposing team sprites; your picks and their picks; Mega (forme sprite) or Tera (sprite + type) per side; ELO before -> after (change); inline notes.
+- **Bo3 card**: set result (No games / Win / Loss / yellow Incomplete), per-game rows (result, link, your picks, their picks, or "Not played"), editable tags and notes on the set.
+- **Lead group card**: two lead sprites + "N MUs"; expands to list opponent teams; hover shows the back pair.
+- **Add replay (bulk)**: paste many replay URLs; a preview groups them by "which 6-Pokemon team the user played" (active team pinned first, "unidentified" bucket last) with per-group "copy URLs" and "import into this team". For us this is the **backfill/import feature** (and we can group by team automatically, since teams come from Showdown).
+- Import/export: JSON with options (replays, replay notes, match notes, opponent plans, member notes) and a share code (6 chars, SHA-256 dedupe, expiry, rate-limited). We only need local JSON export/import (share code is optional later).
+- Collaboration/sharing with granular permissions exists server-side; out of scope for a local userscript.
+
+### 12.4 Data model (their server schema; reduce to what we need)
+- **Team**: name, paste URL, regulation, tracked usernames, created/updated. Replay count / win rate derived.
+- **Replay**: url (unique per team), notes, full raw log, opponent, result win/loss, reviewed flag, gameNumber 1-3 or null, date, match FK. No tags on replays; tags only on Match.
+- **BattleData** (derived per game): winner, userPlayer/opponentPlayer, teams{p1,p2}, teamDetails{player:[{species, item (null unknown, "" known empty)}]}, actualPicks, teraEvents, megaEvents {pokemon, megaForme}, eloChanges{before, after, change}, moveUsage{player:{pokemon:{move:count}}}.
+- **Match** (Bo3 container): opponent, notes, tags[], replays[], derived result/isComplete.
+- **TeamMember**: pokemonName, slot, notes, calcs[] (strings). Sync keeps notes when the paste changes (by species).
+- **GamePlan / GamePlanTeam / composition**: opposing team paste, colour, position, notes, compositions `{lead1, lead2, back1, back2, notes}`.
+- **Folder**: user-defined folders, a team can be in many.
+- Export JSON v1.0: `{version, exportedAt, options, team{name, pokepaste, regulation, showdownUsernames, teamMembers}, replays[{url, battleLog, opponent, result, gameNumber, date, notes}], matches[{opponent, notes, tags, replayUrls}], opponentPlans[...]}`; replays link to matches by URL; folders/colours/reviewed/order are not exported (a gap we should not repeat).
+
+### 12.5 Name normalization and roster matching
+- Species registry generated from `@pkmn/dex` (+ Showdown aliases + app aliases + sprite map): `{num, form, name, displayName, baseSpecies, types, aliases}`. Competitive formes collapse to a `baseSpecies` **analytics key** (e.g. Zamazenta and Zamazenta-Crowned share one) while display keeps the full forme. We can use the client's own `Dex` for this (verify it covers Champions Megas).
+- **Exact 6-vs-6 roster matching** between a pasted opponent team and a game's revealed roster: normalize both (strip Ogerpon Tera suffixes, resolve aliases/forme bases), then multiset match by backtracking. Output `confirmed` / `possible` / `none`; wildcard formes (`*`) and unknown items only yield `possible`. With open team sheets (our format) the opponent roster and items are known exactly, so "confirmed" is the common case; Mega stone -> resulting forme rules let a held stone stand in for an unrevealed forme.
+- Result helpers: accept win/loss/lose; win rate = rounded integer (we should keep decimals and show sample size).
+
+### 12.6 Speed tiers
+- Generated per regulation from a species list (Megas auto-expanded from the base; Z-Megas only in M-C); 4 rows per species: max +Spe, max neutral, 0 neutral, 0 -Spe; Champions uses Stat Points (`sps*8-4` EV equivalent; 32 SPs = 252 EVs). UI: regulation select, Tailwind (x2) and Trick Room (reverse) toggles, click a row to toggle Choice Scarf (x1.5, floored) for that row; table columns `#, Pokemon, Speed, Base, Spread`; your team's rows are computed live from the set (item multipliers: Scarf x1.5, Iron Ball/Power items x0.5, Quick Powder x2 Ditto only); Mega stone adds a mega-forme row; pastes with all values <= 32 are treated as SPs. No handling for speed stages, paralysis, Unburden, or Speed-boosting abilities (opportunity).
+- Source data refreshed by a weekly job from species lists (seeded from Serebii).
+
+### 12.7 Damage calc
+- Engine `@smogon/calc`; Champions mode reuses the Gen 9 engine with SPs mapped to EVs, IVs 31, level 50. Field state: game type, terrain, weather, gravity, Ruin abilities, per-side screens, Helping Hand, Tailwind, Friend Guard, Steely Spirit, Power Spot, Battery, hazards; status, boosts, current HP %, Tera type, Protosynthesis/Quark Drive boosted stat, per-move BP override and crit. Custom patch for Aura Guard (not in the engine).
+- Sets come from a community VGC setdex (NCP), refreshed weekly, plus your own team's sets from the paste. "Save" appends the result description string to a team member's calc list (text only, not re-openable). Opportunity: save structured calc state (attacker, defender, field, move) so calcs are re-openable and linkable to matchup plans.
+
+### 12.8 Known gaps and opportunities (their open issues and source)
+- No timeline/trend views: ELO over time (requested, ELO data exists but is not charted), rolling win rate. No date range, opponent-rating, or Bo3-only filters; Usage Stats has no filters at all.
+- Custom matchup analysis only gives an average win rate (maintainers want lead/back suggestions with statistical sufficiency). No confidence intervals or minimum-sample warnings beyond a "3 encounters" gate. No lead-vs-lead tables, bring-order/turn-by-turn analysis, damage-taken, or speed-control tracking.
+- Ditto/Zoroark (Transform/Illusion) not handled in logs; nickname parsing, forme/sprite mismatches (Urshifu, Koraidon), replays where you are p2, and replays between two tracked usernames were recurring bugs. Team versioning requested (no versioning of set changes).
+- Replay search is limited to opposing Pokemon name (plus `user:`/`tag:` on Bo3); no search by move, item or Tera/Mega; replays have notes but no tags; no sort/filter by date/opponent on the flat list.
+- Calcs are free text; speed tiers ignore in-battle modifiers and are not tied to an opponent; type chart is defensive only (offensive coverage requested).
+- Requires an account and a server; export drops folders, colours, reviewed flags and plan order; mobile layout was a repeated source of bugs.
+- **Where we are structurally better**: no account, no paste step, no replay upload, live capture, own teams from the teambuilder, exact opponent sets via open team sheets, instant stats, works offline.
