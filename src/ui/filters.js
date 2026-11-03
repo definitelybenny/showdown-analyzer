@@ -2,7 +2,10 @@
 import { h, btn, chip, shortFormat } from './components.js';
 import { keyOf } from '../core/stats.js';
 
-export const DEFAULT_FILTERS = { result: '', format: '', from: '', to: '', team: '', opp: [], bo3Only: false, reviewed: '' };
+/** team filter value meaning "whatever team my most recent game used" (follows team switches automatically). */
+export const CURRENT_TEAM = '@current';
+
+export const DEFAULT_FILTERS = { result: '', format: '', from: '', to: '', team: CURRENT_TEAM, opp: [], bo3Only: false, reviewed: '' };
 
 /** UI filter state -> stats.filterGames query (dates become local-day bounds in ms). */
 export function toQuery(f) {
@@ -74,7 +77,7 @@ export function renderFilterBar(ctx) {
 		{ class: 'sa-filterpanel' },
 		field('Result', select(f.result, [['', 'All'], ['win', 'Wins'], ['loss', 'Losses'], ['tie', 'Ties']], v => ctx.set({ result: v }))),
 		field('Format', select(f.format, [['', 'All formats'], ...ctx.formats.map(x => [x.format, `${shortFormat(x.format)} (${x.games})`])], v => ctx.set({ format: v }))),
-		field('My team', select(f.team, [['', 'All teams'], ...ctx.teams.map(t => [t.key, `${t.species.slice(0, 3).join(', ')}... (${t.games})`])], v => ctx.set({ team: v }))),
+		field('My team', select(f.team, [[CURRENT_TEAM, 'Current team (auto)'], ['', 'All teams'], ...ctx.teams.map(t => [t.key, `${t.species.slice(0, 3).join(', ')}... (${t.games})`])], v => ctx.set({ team: v }))),
 		field('From', h('input', { type: 'date', value: f.from, onchange: e => ctx.set({ from: e.target.value }) })),
 		field('To', h('input', { type: 'date', value: f.to, onchange: e => ctx.set({ to: e.target.value }) })),
 		ctx.showReviewed ? field('Reviewed', select(f.reviewed, [['', 'Any'], ['yes', 'Reviewed'], ['no', 'Not reviewed']], v => ctx.set({ reviewed: v }))) : null,
@@ -95,7 +98,7 @@ function activeChips(f, ctx) {
 	const out = [];
 	if (f.result) out.push(chip(f.result));
 	if (f.format) out.push(chip(shortFormat(f.format)));
-	if (f.team) out.push(chip('team'));
+	if (f.team) out.push(chip(f.team === CURRENT_TEAM ? 'current team' : 'team'));
 	if (f.from || f.to) out.push(chip(`${f.from || '...'} to ${f.to || '...'}`));
 	if (f.reviewed) out.push(chip(f.reviewed === 'yes' ? 'reviewed' : 'not reviewed'));
 	if (f.bo3Only) out.push(chip('Bo3'));

@@ -14,7 +14,7 @@
 import { ROOT_ID } from '../host/detect.js';
 import { h, clear, setDoc } from './components.js';
 import { injectStyle } from './style.css.js';
-import { renderFilterBar, sanitizeFilters, toQuery, DEFAULT_FILTERS } from './filters.js';
+import { renderFilterBar, sanitizeFilters, toQuery, DEFAULT_FILTERS, CURRENT_TEAM } from './filters.js';
 import { filterGames, buildSets, listFormats, listTeams, opposing, DEFAULT_MIN_SAMPLE, DEFAULT_MIN_MATCHUP } from '../core/stats.js';
 import { renderGames, renderGameDetail } from './views/games.js';
 import { renderSets } from './views/sets.js';
@@ -190,7 +190,9 @@ export function mountApp(rootEl, opts) {
 
 	function context() {
 		const view = VIEWS.find(v => v.id === state.view) || VIEWS[0];
-		const games = filterGames(data.all, toQuery(state.filters));
+		const query = toQuery(state.filters);
+		if (query.team === CURRENT_TEAM) query.team = data.teams.length ? data.teams[0].key : ''; // newest team first
+		const games = filterGames(data.all, query);
 		const ids = new Set(games.filter(g => g.setId).map(g => g.setId));
 		return {
 			state, view, repo, actions: { ...actions, setView },
