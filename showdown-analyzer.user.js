@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Showdown Analyzer
 // @namespace    showdown-analyzer
-// @version      0.1.0
+// @version      0.1.1
 // @description  Records and analyzes VGC battles inside Pokemon Showdown
 // @match        https://play.pokemonshowdown.com/*
 // @run-at       document-start
@@ -3852,7 +3852,7 @@ ${R} .sa-sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect
   }
 
   // src/main.js
-  var VERSION = true ? "0.1.0" : "dev";
+  var VERSION = true ? "0.1.1" : "dev";
   var repoPromise = null;
   var capture = null;
   var app = null;

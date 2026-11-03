@@ -1,6 +1,6 @@
 {
   "name": "showdown-analyzer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Tampermonkey userscript: battle recorder/analyzer tab for Pokemon Showdown",
   "type": "module",
