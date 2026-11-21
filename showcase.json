@@ -1,0 +1,7 @@
+{
+  "$schema": "https://definitelybenny.dev/showcase.schema.json",
+  "id": "showdown-analyzer",
+  "status": "soon",
+  "question": "What actually happened in the battle I just lost?",
+  "note": "early build, still testing it"
+}
